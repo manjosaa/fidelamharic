@@ -1,0 +1,8 @@
+{
+  "name": "Remix Fidel Practice Workbook",
+  "description": "Interactive and mobile-responsive Amharic Fidel workbook with native audio pronunciation, interactive exercises, letter tracing, and printable worksheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
