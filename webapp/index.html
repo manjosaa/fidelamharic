@@ -8,7 +8,17 @@
     <link rel="manifest" href="./manifest.webmanifest">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">Loading application… If nothing changes, open browser devtools and check the console/network for errors.</div>
+    <noscript>Please enable JavaScript to view this app.</noscript>
+    <script>
+      // Provide a visible fallback if the module bundle fails to load or execute
+      window.__appFallbackTimeout = setTimeout(() => {
+        const root = document.getElementById('root')
+        if (root && root.innerHTML.trim().length === 0) {
+          root.innerHTML = 'The app failed to load. Check console for errors.'
+        }
+      }, 2000)
+    </script>
     <script type="module" src="./src/main.jsx"></script>
   </body>
 </html>
