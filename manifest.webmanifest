@@ -1,0 +1,1 @@
+{"name":"Responsive Webapp","short_name":"Webapp","description":"Simple responsive React app packaged as a PWA","start_url":"./","display":"standalone","background_color":"#ffffff","theme_color":"#2563eb","lang":"en","scope":"./","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
