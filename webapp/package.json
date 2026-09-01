@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "electron:dev": "electron .",
-    "electron:prod": "npm run build && electron ."
+    "electron:prod": "npm run build && electron .",
+    "dist": "npm run build && electron-builder --win --x64"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -19,6 +20,27 @@
     "vite": "^6.4.3",
     "@vitejs/plugin-react": "^5.2.0",
     "vite-plugin-pwa": "^1.0.0",
-    "electron": "^26.0.0"
+    "electron": "^26.0.0",
+    "electron-builder": "^24.7.0"
+  },
+  "build": {
+    "appId": "com.manjosaa.responsivewebapp",
+    "files": [
+      "dist/**/*",
+      "electron-main.cjs",
+      "preload.cjs",
+      "package.json"
+    ],
+    "win": {
+      "target": ["nsis"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "directories": {
+      "buildResources": "build"
+    }
   }
 }
