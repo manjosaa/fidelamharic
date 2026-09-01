@@ -1,6 +1,6 @@
 {
   "name": "የፊደል መልመጃ",
-  "description": "Interactive Amharic Fidel workbook with audio pronunciation, interactive sequence quizzes, word-matching pairs, word hunt, and handwriting tracing canvas.",
+  "description": "Interactive Amharic learning workbook featuring Fidel alphabet charts, sentence builder with verbs/nouns/adjectives, comprehensive grammar tips, difficult word pronunciation guides, audio, and handwriting canvas.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
