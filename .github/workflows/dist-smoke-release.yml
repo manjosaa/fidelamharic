@@ -1,0 +1,75 @@
+name: Build, Smoke Test, and Release Installer
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+
+jobs:
+  build-smoke-release:
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd webapp
+          npm install --no-audit --no-fund
+
+      - name: Build web assets
+        run: |
+          cd webapp
+          npm run build
+
+      - name: Smoke test built HTML
+        shell: pwsh
+        run: |
+          $file = 'webapp\dist\index.html'
+          Write-Host "Checking $file contains expected app string"
+          if (Select-String -Path $file -Pattern 'Responsive Webapp') {
+            Write-Host 'Smoke check passed: built HTML contains "Responsive Webapp"'
+          } else {
+            Write-Error 'Smoke check failed: built HTML missing expected text'
+          }
+
+      - name: Build Windows installer (electron-builder)
+        env:
+          CI: true
+        run: |
+          cd webapp
+          npm run dist
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: "Windows installer v${{ github.run_number }}"
+          body: "Automated Windows installer build from run ${{ github.run_id }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload installer to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: webapp\dist\*.exe
+          asset_name: responsive-webapp-setup-${{ github.run_number }}.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload unpacked artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-unpacked
+          path: webapp\dist\**
