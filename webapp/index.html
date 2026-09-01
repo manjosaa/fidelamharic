@@ -11,13 +11,35 @@
     <div id="root">Loading application… If nothing changes, open browser devtools and check the console/network for errors.</div>
     <noscript>Please enable JavaScript to view this app.</noscript>
     <script>
-      // Provide a visible fallback if the module bundle fails to load or execute
-      window.__appFallbackTimeout = setTimeout(() => {
-        const root = document.getElementById('root')
-        if (root && root.innerHTML.trim().length === 0) {
-          root.innerHTML = 'The app failed to load. Check console for errors.'
-        }
-      }, 2000)
+      // Diagnostics overlay: capture runtime errors and show them on the page
+      (function(){
+        const css = `#diag-overlay{position:fixed;left:8px;bottom:8px;right:8px;max-height:40vh;overflow:auto;background:rgba(0,0,0,0.85);color:#fff;padding:10px;border-radius:6px;font-family:monospace;font-size:12px;z-index:99999;display:none}
+#diag-overlay h4{margin:0 0 6px 0;font-size:13px}
+#diag-overlay pre{white-space:pre-wrap;margin:0}`;
+        const style = document.createElement('style'); style.textContent = css; document.head.appendChild(style);
+        const overlay = document.createElement('div'); overlay.id = 'diag-overlay'; overlay.innerHTML = '<h4>App diagnostics</h4><pre id="diag-log"></pre>'; document.body.appendChild(overlay);
+        const logEl = overlay.querySelector('#diag-log');
+        function show(msg){ overlay.style.display='block'; logEl.textContent = msg + '\n---\n' + logEl.textContent; }
+
+        window.addEventListener('error', function(e){
+          try{ const msg = `Error: ${e.message} at ${e.filename || ''}:${e.lineno || 0}:${e.colno || 0}`; show(msg); console.error(e.error || e); } catch(_){ console.error(e); }
+        });
+        window.addEventListener('unhandledrejection', function(e){
+          try{ const reason = e.reason && e.reason.message ? e.reason.message : String(e.reason); show('UnhandledRejection: ' + reason); console.error(e.reason); } catch(_){ console.error(e); }
+        });
+
+        // Clear the previous simple fallback when app initializes
+        document.addEventListener('DOMContentLoaded', function(){ if (window.__appFallbackTimeout) { clearTimeout(window.__appFallbackTimeout); window.__appFallbackTimeout = null; } });
+
+        // If root remains empty after a short delay, show a diagnostic hint
+        window.__appFallbackTimeout = setTimeout(() => {
+          const root = document.getElementById('root');
+          if (root && root.innerHTML.trim().length === 0) {
+            show('The app did not mount. Check that the module bundle loaded (open Network tab) and there are no JS runtime errors.');
+          }
+        }, 1500);
+
+      })();
     </script>
     <script type="module" src="./src/main.jsx"></script>
   </body>
