@@ -117,15 +117,31 @@ class SpeechService {
     }
 
     const utter = new SpeechSynthesisUtterance(text);
+    
+    // Try to find Amharic voice, fallback to any available voice
     if (this.amVoice) {
       utter.voice = this.amVoice;
       utter.lang = this.amVoice.lang;
     } else {
-      utter.lang = 'am-ET';
+      // Try to find any voice for Amharic or use system default
+      const voices = this.synth.getVoices();
+      const amharicVoice = voices.find(v => v.lang.toLowerCase().startsWith('am'));
+      if (amharicVoice) {
+        utter.voice = amharicVoice;
+        utter.lang = amharicVoice.lang;
+      } else {
+        utter.lang = 'am-ET';
+      }
     }
 
-    utter.rate = 0.85;
+    utter.rate = 0.9;
     utter.pitch = 1.0;
+    utter.volume = 1.0;
+
+    utter.onstart = () => {
+      this.state.isSpeaking = true;
+      this.notify();
+    };
 
     utter.onend = () => {
       this.state.isSpeaking = false;
@@ -133,18 +149,26 @@ class SpeechService {
       this.notify();
     };
 
-    utter.onerror = () => {
+    utter.onerror = (event) => {
+      console.warn('Speech synthesis error:', event.error);
+      // Fallback to online TTS on error
+      this.stop();
       if (this.state.isOnline) {
         this.speakOnline(text);
-      } else {
-        this.stop();
       }
     };
 
     try {
-      this.synth.speak(utter);
+      // Cancel any previous speech
+      this.synth.cancel();
+      // Use small delay to ensure proper initialization on Android
+      setTimeout(() => {
+        if (this.synth) {
+          this.synth.speak(utter);
+        }
+      }, 50);
     } catch (e) {
-      console.error(e);
+      console.error('Failed to speak:', e);
       this.speakOnline(text);
     }
   }
@@ -154,10 +178,28 @@ class SpeechService {
     this.notify();
 
     const encoded = encodeURIComponent(text);
+    
+    // Try Google Translate TTS first (most reliable for Amharic)
     const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=am&client=tw-ob`;
 
-    const audio = new Audio(url);
+    const audio = new Audio();
     this.audioEl = audio;
+    
+    // Add error handler for first attempt
+    const handleError = () => {
+      console.warn('Primary TTS service failed, trying alternative...');
+      // Try alternative: use slower backup
+      const backupUrl = `https://tts.google.com/api/tts?text=${encoded}&lang=am`;
+      audio.src = backupUrl;
+      audio.onerror = () => {
+        console.error('All TTS services failed');
+        this.state.isSpeaking = false;
+        this.state.isPlayingOnline = false;
+        this.state.activeWord = null;
+        this.audioEl = null;
+        this.notify();
+      };
+    };
 
     audio.onended = () => {
       this.state.isSpeaking = false;
@@ -167,15 +209,11 @@ class SpeechService {
       this.notify();
     };
 
-    audio.onerror = () => {
-      this.state.isSpeaking = false;
-      this.state.isPlayingOnline = false;
-      this.state.activeWord = null;
-      this.audioEl = null;
-      this.notify();
-    };
+    audio.onerror = handleError;
+    audio.src = url;
 
-    audio.play().catch(() => {
+    audio.play().catch((err) => {
+      console.warn('Audio play failed:', err);
       this.state.isSpeaking = false;
       this.state.isPlayingOnline = false;
       this.state.activeWord = null;
