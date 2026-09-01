@@ -23,8 +23,10 @@
     "electron": "^26.0.0",
     "electron-builder": "^24.7.0"
   },
+  "repository": { "type": "git", "url": "https://github.com/manjosaa/fidelamharic.git" },
   "build": {
     "appId": "com.manjosaa.responsivewebapp",
+    "publish": null,
     "files": [
       "dist/**/*",
       "electron-main.cjs",
