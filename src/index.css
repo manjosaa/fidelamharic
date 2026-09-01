@@ -1,64 +1,30 @@
 @import "tailwindcss";
 
 @layer base {
-  :root {
-    --paper: #F7F1E4;
-    --paper-line: #CFC3A6;
-    --ink: #28324A;
-    --ink-soft: #5C6478;
-    --gold: #C4881F;
-    --gold-soft: #EAD9AF;
-    --green: #3E6650;
-    --red: #A83A28;
-  }
-
   body {
-    background-color: #EDE3CC;
-    background-image: 
-      radial-gradient(circle at 15% 10%, rgba(196,136,31,0.08), transparent 40%),
-      radial-gradient(circle at 85% 90%, rgba(62,102,80,0.07), transparent 40%);
-    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    color: var(--ink);
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 }
 
-.font-serif {
-  font-family: 'Fraunces', Georgia, serif;
+.font-ethiopic {
+  font-family: 'Noto Serif Ethiopic', 'Plus Jakarta Sans', system-ui, serif;
 }
 
-.font-sans {
-  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+.font-cinzel {
+  font-family: 'Cinzel', serif;
 }
 
-.font-amh {
-  font-family: 'Noto Sans Ethiopic', 'Abyssinica SIL', 'Nyala', sans-serif;
+.font-calligraphy {
+  font-family: 'Yuji Boku', 'Noto Serif Ethiopic', serif;
 }
 
-/* Custom scrollbar for tab bar */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* Custom worksheet paper textures */
+.paper-sheet {
+  background-color: #F7F1E4;
+  background-image: radial-gradient(#CFC3A6 0.75px, transparent 0.75px);
+  background-size: 16px 16px;
 }
 
-/* Print optimization */
-@media print {
-  body {
-    background: #ffffff !important;
-    background-image: none !important;
-    padding: 0 !important;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .print-page {
-    box-shadow: none !important;
-    border: none !important;
-    border-left: 5px solid #A83A28 !important;
-    padding: 20px !important;
-  }
+.paper-card {
+  box-shadow: 0 4px 20px -2px rgba(40, 50, 74, 0.08), 0 2px 6px -1px rgba(40, 50, 74, 0.04);
 }

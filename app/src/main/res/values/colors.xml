@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#3E6650</color>
+    <color name="primary_dark">#2A4737</color>
+    <color name="accent_gold">#C4881F</color>
+    <color name="accent_red">#A83A28</color>
+    <color name="parchment">#EDE3CC</color>
+    <color name="paper_sheet">#F7F1E4</color>
+    <color name="ink">#28324A</color>
+</resources>

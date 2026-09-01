@@ -1,245 +1,187 @@
 import { AudioState } from '../types';
 
 class SpeechService {
+  private state: AudioState = {
+    isSpeaking: false,
+    isPlayingOnline: false,
+    hasNativeVoice: false,
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+    forceOnline: false,
+    activeWord: null,
+  };
+
+  private listeners: Set<(state: AudioState) => void> = new Set();
+  private audioEl: HTMLAudioElement | null = null;
+  private synth: SpeechSynthesis | null = null;
   private amVoice: SpeechSynthesisVoice | null = null;
-  private currentAudio: HTMLAudioElement | null = null;
-  private isOnline: boolean = typeof navigator !== 'undefined' ? navigator.onLine : true;
-  private forceOnline: boolean = false;
-  private isSpeaking: boolean = false;
-  private isPlayingOnline: boolean = false;
-  private activeWord: string | null = null;
-  private listeners: ((state: AudioState) => void)[] = [];
-  private audioUnlocked: boolean = false;
 
   constructor() {
     if (typeof window !== 'undefined') {
-      window.addEventListener('online', () => {
-        this.isOnline = true;
-        this.notify();
-      });
-      window.addEventListener('offline', () => {
-        this.isOnline = false;
-        this.notify();
-      });
-
       if ('speechSynthesis' in window) {
-        this.loadVoices();
-        window.speechSynthesis.onvoiceschanged = () => {
-          this.loadVoices();
-        };
+        this.synth = window.speechSynthesis;
+        this.initVoices();
+        if (this.synth.onvoiceschanged !== undefined) {
+          this.synth.onvoiceschanged = () => this.initVoices();
+        }
       }
+
+      window.addEventListener('online', () => this.updateOnlineStatus(true));
+      window.addEventListener('offline', () => this.updateOnlineStatus(false));
     }
   }
 
-  public subscribe(fn: (state: AudioState) => void): () => void {
-    this.listeners.push(fn);
-    fn(this.getState());
-    return () => {
-      this.listeners = this.listeners.filter((l) => l !== fn);
-    };
+  private initVoices() {
+    if (!this.synth) return;
+    const voices = this.synth.getVoices();
+    const am = voices.find(
+      (v) => v.lang.toLowerCase().startsWith('am') || v.lang.toLowerCase().includes('ethiopic')
+    );
+    this.amVoice = am || null;
+    this.state.hasNativeVoice = !!am;
+    this.notify();
   }
 
-  public getState(): AudioState {
-    return {
-      isSpeaking: this.isSpeaking,
-      isPlayingOnline: this.isPlayingOnline,
-      hasNativeVoice: !!this.amVoice,
-      isOnline: this.isOnline,
-      forceOnline: this.forceOnline,
-      activeWord: this.activeWord,
-    };
+  private updateOnlineStatus(isOnline: boolean) {
+    this.state.isOnline = isOnline;
+    this.notify();
+  }
+
+  public subscribe(cb: (state: AudioState) => void): () => void {
+    this.listeners.add(cb);
+    cb(this.state);
+    return () => this.listeners.delete(cb);
   }
 
   private notify() {
-    const s = this.getState();
-    this.listeners.forEach((fn) => fn(s));
+    this.listeners.forEach((cb) => cb({ ...this.state }));
   }
 
-  private loadVoices() {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    const voices = window.speechSynthesis.getVoices();
-    this.amVoice =
-      voices.find(
-        (v) =>
-          v.lang &&
-          (v.lang.toLowerCase().startsWith('am') ||
-            v.name.toLowerCase().includes('amharic') ||
-            v.name.toLowerCase().includes('ethiopic'))
-      ) || null;
+  public toggleForceOnline() {
+    this.state.forceOnline = !this.state.forceOnline;
     this.notify();
-  }
-
-  public toggleForceOnline(): boolean {
-    this.forceOnline = !this.forceOnline;
-    this.notify();
-    return this.forceOnline;
-  }
-
-  public setForceOnline(val: boolean) {
-    this.forceOnline = val;
-    this.notify();
-  }
-
-  // Pre-unlock audio on mobile touch
-  public unlockAudio() {
-    if (this.audioUnlocked) return;
-    try {
-      if ('AudioContext' in window || 'webkitAudioContext' in (window as unknown as { webkitAudioContext: typeof AudioContext })) {
-        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        const ctx = new AudioCtx();
-        if (ctx.state === 'suspended') {
-          ctx.resume();
-        }
-      }
-      this.audioUnlocked = true;
-    } catch {
-      // ignore
-    }
+    return this.state.forceOnline;
   }
 
   public stop() {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    if (this.synth) {
       try {
-        window.speechSynthesis.cancel();
-      } catch {
-        // ignore
+        this.synth.cancel();
+      } catch (e) {
+        console.error(e);
       }
     }
-    if (this.currentAudio) {
-      try {
-        this.currentAudio.pause();
-        this.currentAudio.src = '';
-      } catch {
-        // ignore
-      }
-      this.currentAudio = null;
+    if (this.audioEl) {
+      this.audioEl.pause();
+      this.audioEl.currentTime = 0;
+      this.audioEl = null;
     }
-    this.isSpeaking = false;
-    this.isPlayingOnline = false;
-    this.activeWord = null;
+    this.state.isSpeaking = false;
+    this.state.isPlayingOnline = false;
+    this.state.activeWord = null;
     this.notify();
   }
 
-  public async speak(text: string): Promise<void> {
-    if (!text || !text.trim()) return;
-    this.unlockAudio();
+  public speak(text: string) {
+    if (!text || text.trim() === '') return;
+    const cleanText = text.trim();
+
     this.stop();
 
-    const cleanText = text.trim();
-    this.isSpeaking = true;
-    this.activeWord = cleanText;
-    this.notify();
-
-    // Haptic feedback on mobile if supported
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    if ('vibrate' in navigator) {
       try {
         navigator.vibrate(15);
-      } catch {
-        // ignore
-      }
+      } catch (_) {}
     }
 
-    // If forced online or no native voice
-    if (this.forceOnline && this.isOnline) {
-      this.speakOnline(cleanText);
+    this.state.isSpeaking = true;
+    this.state.activeWord = cleanText;
+    this.notify();
+
+    if (this.state.forceOnline || !this.state.hasNativeVoice) {
+      if (this.state.isOnline) {
+        this.speakOnline(cleanText);
+      } else if (this.synth) {
+        this.speakNative(cleanText);
+      } else {
+        this.stop();
+      }
+    } else {
+      this.speakNative(cleanText);
+    }
+  }
+
+  private speakNative(text: string) {
+    if (!this.synth) {
+      this.speakOnline(text);
       return;
     }
 
-    // Try Native Web Speech API first
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window && this.amVoice) {
-      try {
-        const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.voice = this.amVoice;
-        utterance.lang = this.amVoice.lang || 'am-ET';
-        utterance.rate = 0.85;
-        utterance.pitch = 1.0;
-
-        utterance.onend = () => {
-          this.isSpeaking = false;
-          this.activeWord = null;
-          this.notify();
-        };
-
-        utterance.onerror = () => {
-          this.tryOnlineFallback(cleanText);
-        };
-
-        window.speechSynthesis.speak(utterance);
-        return;
-      } catch {
-        this.tryOnlineFallback(cleanText);
-        return;
-      }
+    const utter = new SpeechSynthesisUtterance(text);
+    if (this.amVoice) {
+      utter.voice = this.amVoice;
+      utter.lang = this.amVoice.lang;
+    } else {
+      utter.lang = 'am-ET';
     }
 
-    // Try online fallback
-    this.tryOnlineFallback(cleanText);
-  }
+    utter.rate = 0.85;
+    utter.pitch = 1.0;
 
-  private tryOnlineFallback(text: string) {
-    if (this.isOnline) {
-      this.speakOnline(text);
-    } else {
-      this.isSpeaking = false;
-      this.activeWord = null;
+    utter.onend = () => {
+      this.state.isSpeaking = false;
+      this.state.activeWord = null;
       this.notify();
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        try {
-          navigator.vibrate([40, 60, 40]);
-        } catch {
-          // ignore
-        }
+    };
+
+    utter.onerror = () => {
+      if (this.state.isOnline) {
+        this.speakOnline(text);
+      } else {
+        this.stop();
       }
+    };
+
+    try {
+      this.synth.speak(utter);
+    } catch (e) {
+      console.error(e);
+      this.speakOnline(text);
     }
   }
 
   private speakOnline(text: string) {
-    this.isPlayingOnline = true;
+    this.state.isPlayingOnline = true;
     this.notify();
 
     const encoded = encodeURIComponent(text);
-    const audioUrls = [
-      `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=am&client=tw-ob`,
-      `https://code.responsivevoice.org/getvoice.php?t=${encoded}&tl=am`,
-    ];
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=am&client=tw-ob`;
 
-    let currentIdx = 0;
+    const audio = new Audio(url);
+    this.audioEl = audio;
 
-    const playNext = () => {
-      if (currentIdx >= audioUrls.length) {
-        this.isSpeaking = false;
-        this.isPlayingOnline = false;
-        this.activeWord = null;
-        this.notify();
-        return;
-      }
-
-      const url = audioUrls[currentIdx];
-      const audio = new Audio(url);
-      this.currentAudio = audio;
-
-      audio.onended = () => {
-        this.isSpeaking = false;
-        this.isPlayingOnline = false;
-        this.activeWord = null;
-        this.currentAudio = null;
-        this.notify();
-      };
-
-      audio.onerror = () => {
-        this.currentAudio = null;
-        currentIdx++;
-        playNext();
-      };
-
-      audio.play().catch(() => {
-        this.currentAudio = null;
-        currentIdx++;
-        playNext();
-      });
+    audio.onended = () => {
+      this.state.isSpeaking = false;
+      this.state.isPlayingOnline = false;
+      this.state.activeWord = null;
+      this.audioEl = null;
+      this.notify();
     };
 
-    playNext();
+    audio.onerror = () => {
+      this.state.isSpeaking = false;
+      this.state.isPlayingOnline = false;
+      this.state.activeWord = null;
+      this.audioEl = null;
+      this.notify();
+    };
+
+    audio.play().catch(() => {
+      this.state.isSpeaking = false;
+      this.state.isPlayingOnline = false;
+      this.state.activeWord = null;
+      this.audioEl = null;
+      this.notify();
+    });
   }
 }
 

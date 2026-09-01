@@ -10,15 +10,11 @@ export interface VocabItem {
 
 export interface FidelFamily {
   base: string;
-  name?: string;
-  forms: string[]; // 7 forms: [1st, 2nd, 3rd, 4th, 5th, 6th, 7th]
-  orders?: string[]; // Order names like Ge'ez, Ka'eb, etc.
-  vowels?: string[]; // [ä, u, i, a, e, ə, o]
+  name: string;
+  forms: [string, string, string, string, string, string, string];
   vocab: VocabItem[];
-  notes?: {
-    fr?: string;
-    en?: string;
-  };
+  notesFr?: string;
+  notesEn?: string;
 }
 
 export interface AudioState {

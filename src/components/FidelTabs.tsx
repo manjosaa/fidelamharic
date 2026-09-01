@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { FidelFamily } from '../types';
 import { FIDEL_DATA } from '../data/fidelData';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { speechService } from '../services/speechService';
 
 interface FidelTabsProps {
@@ -13,118 +13,75 @@ export const FidelTabs: React.FC<FidelTabsProps> = ({
   currentFidel,
   onSelectFidel,
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const activeTabRef = useRef<HTMLButtonElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const currentIndex = FIDEL_DATA.findIndex((f) => f.base === currentFidel.base);
 
-  // Auto-scroll to active tab on change
+  const prevFidel = currentIndex > 0 ? FIDEL_DATA[currentIndex - 1] : null;
+  const nextFidel = currentIndex < FIDEL_DATA.length - 1 ? FIDEL_DATA[currentIndex + 1] : null;
+
   useEffect(() => {
-    if (activeTabRef.current && containerRef.current) {
-      const container = containerRef.current;
-      const element = activeTabRef.current;
-      const containerRect = container.getBoundingClientRect();
-      const elementRect = element.getBoundingClientRect();
-
-      if (
-        elementRect.left < containerRect.left ||
-        elementRect.right > containerRect.right
-      ) {
-        element.scrollIntoView({
-          behavior: 'smooth',
-          inline: 'center',
-          block: 'nearest',
-        });
+    if (scrollRef.current) {
+      const activeEl = scrollRef.current.querySelector('[data-active="true"]') as HTMLElement;
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
     }
   }, [currentFidel.base]);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (containerRef.current) {
-      const scrollAmount = direction === 'left' ? -200 : 200;
-      containerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
-
-  const handleSelect = (fidel: FidelFamily) => {
-    onSelectFidel(fidel);
-    speechService.speak(fidel.base);
-  };
-
-  // Find prev and next letters
-  const currentIndex = FIDEL_DATA.findIndex((f) => f.base === currentFidel.base);
-  const prevFidel = currentIndex > 0 ? FIDEL_DATA[currentIndex - 1] : null;
-  const nextFidel = currentIndex < FIDEL_DATA.length - 1 ? FIDEL_DATA[currentIndex + 1] : null;
-
   return (
-    <div id="fidel-tabs-container" className="no-print relative mb-2 flex items-center">
-      {/* Scroll Left Button */}
-      <button
-        id="scroll-tabs-left-btn"
-        onClick={() => scroll('left')}
-        className="hidden md:flex items-center justify-center w-8 h-8 rounded-l-lg bg-[#F7F1E4] border border-[#CFC3A6] text-[#28324A] hover:bg-[#EAD9AF] shrink-0 transition-colors z-10"
-        aria-label="Scroll tabs left"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
+    <div className="flex items-center gap-1.5 w-full mb-3">
+      {prevFidel && (
+        <button
+          onClick={() => {
+            speechService.speak(prevFidel.base);
+            onSelectFidel(prevFidel);
+          }}
+          className="p-2 bg-white border border-[#CFC3A6] hover:border-[#C4881F] text-[#28324A] rounded-xl transition shadow-xs shrink-0"
+          title="Lettre précédente"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      )}
 
-      {/* Tabs list with horizontal scroll */}
       <div
-        ref={containerRef}
-        id="tabs-scroll-area"
-        className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1 w-full scroll-smooth"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        ref={scrollRef}
+        className="flex items-center gap-1.5 overflow-x-auto py-1 px-1 scrollbar-none flex-1"
+        style={{ scrollbarWidth: 'none' }}
       >
-        {FIDEL_DATA.map((fidel) => {
-          const isActive = fidel.base === currentFidel.base;
+        {FIDEL_DATA.map((item) => {
+          const isSelected = item.base === currentFidel.base;
           return (
             <button
-              key={fidel.base}
-              ref={isActive ? activeTabRef : null}
-              id={`tab-fidel-${fidel.base}`}
-              onClick={() => handleSelect(fidel)}
-              className={`min-w-[40px] sm:min-w-[44px] h-10 px-2 rounded-t-lg font-amh text-lg sm:text-xl font-bold flex items-center justify-center transition-all shrink-0 border-t border-x ${
-                isActive
-                  ? 'bg-[#F7F1E4] text-[#28324A] border-[#C4881F] shadow-sm transform -translate-y-0.5 border-b-2 border-b-transparent z-10 ring-1 ring-[#C4881F]/30'
-                  : 'bg-white/80 text-[#5C6478] border-[#CFC3A6] hover:bg-white hover:text-[#28324A]'
+              key={item.base}
+              data-active={isSelected ? 'true' : 'false'}
+              onClick={() => {
+                speechService.speak(item.base);
+                onSelectFidel(item);
+              }}
+              className={`px-3 py-1.5 rounded-t-xl rounded-b-md border transition shrink-0 flex items-center justify-center min-w-[42px] ${
+                isSelected
+                  ? 'bg-[#F7F1E4] border-[#C4881F] text-[#3E6650] font-bold shadow-xs'
+                  : 'bg-white/80 border-[#CFC3A6] text-[#5C6478] hover:bg-white hover:border-[#C4881F]'
               }`}
-              title={fidel.name || fidel.base}
             >
-              <span>{fidel.base}</span>
+              <span className="font-ethiopic text-xl leading-none">{item.base}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Scroll Right Button */}
-      <button
-        id="scroll-tabs-right-btn"
-        onClick={() => scroll('right')}
-        className="hidden md:flex items-center justify-center w-8 h-8 rounded-r-lg bg-[#F7F1E4] border border-[#CFC3A6] text-[#28324A] hover:bg-[#EAD9AF] shrink-0 transition-colors z-10"
-        aria-label="Scroll tabs right"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
-
-      {/* Quick Prev / Next jump buttons on phone */}
-      <div className="flex md:hidden items-center gap-1 ml-1 shrink-0">
-        {prevFidel && (
-          <button
-            onClick={() => handleSelect(prevFidel)}
-            className="p-1.5 bg-white border border-[#CFC3A6] rounded-md text-xs font-bold text-[#5C6478] hover:text-[#28324A]"
-            title={`Précédent: ${prevFidel.base}`}
-          >
-            ← {prevFidel.base}
-          </button>
-        )}
-        {nextFidel && (
-          <button
-            onClick={() => handleSelect(nextFidel)}
-            className="p-1.5 bg-white border border-[#CFC3A6] rounded-md text-xs font-bold text-[#5C6478] hover:text-[#28324A]"
-            title={`Suivant: ${nextFidel.base}`}
-          >
-            {nextFidel.base} →
-          </button>
-        )}
-      </div>
+      {nextFidel && (
+        <button
+          onClick={() => {
+            speechService.speak(nextFidel.base);
+            onSelectFidel(nextFidel);
+          }}
+          className="p-2 bg-white border border-[#CFC3A6] hover:border-[#C4881F] text-[#28324A] rounded-xl transition shadow-xs shrink-0"
+          title="Lettre suivante"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 };
