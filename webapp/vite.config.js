@@ -27,5 +27,9 @@ export default defineConfig({
   ],
   server: {
     port: 5173
+  },
+  build: {
+    // Use esbuild for minification in CI to avoid rollup-terser requiring serialize-javascript
+    minify: 'esbuild'
   }
 })
