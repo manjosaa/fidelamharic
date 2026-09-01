@@ -29,7 +29,7 @@ export const FidelTabs: React.FC<FidelTabsProps> = ({
   }, [currentFidel.base]);
 
   return (
-    <div className="flex items-center gap-1.5 w-full mb-3">
+    <div className="flex items-center gap-1.5 w-full mb-3 no-print">
       {prevFidel && (
         <button
           onClick={() => {

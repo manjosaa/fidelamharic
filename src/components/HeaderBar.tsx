@@ -10,7 +10,8 @@ import {
   Languages, 
   HelpCircle, 
   Grid3X3,
-  X
+  X,
+  Printer
 } from 'lucide-react';
 
 interface HeaderBarProps {
@@ -22,6 +23,7 @@ interface HeaderBarProps {
   onToggleKey: () => void;
   onNewSheet: () => void;
   onOpenVoiceHelp: () => void;
+  onPrint?: () => void;
   audioState: AudioState;
 }
 
@@ -34,13 +36,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   onToggleKey,
   onNewSheet,
   onOpenVoiceHelp,
+  onPrint,
   audioState,
 }) => {
   const [showGridModal, setShowGridModal] = useState(false);
   const isFr = lang === 'fr';
 
   return (
-    <div className="flex flex-col gap-2 mb-3">
+    <div className="flex flex-col gap-2 mb-3 no-print">
       {/* Main Top Control Bar */}
       <div className="bg-[#F7F1E4] border border-[#CFC3A6] rounded-2xl p-3 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Left: Fidel Letter Selector and Language Toggle */}
@@ -70,8 +73,20 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </button>
         </div>
 
-        {/* Right: Actions (Voice Help, Answers Key, New Sheet) */}
+        {/* Right: Actions (Print PDF, Voice Help, Answers Key, New Sheet) */}
         <div className="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+          {/* Print/Download PDF Button */}
+          {onPrint && (
+            <button
+              onClick={onPrint}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#CFC3A6] rounded-xl hover:border-[#3E6650] hover:text-[#3E6650] transition text-xs font-semibold text-[#28324A] shadow-xs"
+              title={isFr ? "Télécharger / Imprimer la fiche en PDF" : "Download / Print worksheet as PDF"}
+            >
+              <Printer className="w-4 h-4 text-[#3E6650]" />
+              <span>{isFr ? 'PDF / Imprimer' : 'Print PDF'}</span>
+            </button>
+          )}
+
           {/* Audio Engine Help Button */}
           <button
             onClick={onOpenVoiceHelp}

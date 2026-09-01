@@ -78,7 +78,7 @@ export const WordHuntQuiz: React.FC<WordHuntQuizProps> = ({ fidel, lang, showKey
   }, [allFound]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 print-break-inside-avoid">
       <div className="flex items-center justify-between">
         <h3 className="font-cinzel text-base font-bold text-[#28324A] flex items-center gap-2">
           <span className="text-[#C4881F]">4.</span>
@@ -86,7 +86,7 @@ export const WordHuntQuiz: React.FC<WordHuntQuizProps> = ({ fidel, lang, showKey
         </h3>
         <button
           onClick={initHunt}
-          className="flex items-center gap-1 text-xs text-[#5C6478] hover:text-[#C4881F] bg-white/80 border border-[#CFC3A6] px-2.5 py-1 rounded-lg transition shadow-2xs"
+          className="flex items-center gap-1 text-xs text-[#5C6478] hover:text-[#C4881F] bg-white/80 border border-[#CFC3A6] px-2.5 py-1 rounded-lg transition shadow-2xs no-print"
           title="Nouvelle grille"
         >
           <RefreshCw className="w-3 h-3 text-[#C4881F]" />
@@ -97,10 +97,10 @@ export const WordHuntQuiz: React.FC<WordHuntQuizProps> = ({ fidel, lang, showKey
       <div className="flex items-center justify-between text-xs text-[#5C6478]">
         <p>
           {isFr
-            ? `Entourez les mots qui contiennent la lettre « ${fidel.base} » :`
+            ? `Entourez au stylo tous les mots qui contiennent la lettre « ${fidel.base} » :`
             : `Circle all words containing the root '${fidel.base}':`}
         </p>
-        <span className={`font-bold px-2 py-0.5 rounded-full ${
+        <span className={`font-bold px-2 py-0.5 rounded-full no-print ${
           allFound ? 'bg-[#3E6650]/20 text-[#3E6650]' : 'bg-[#EDE3CC] text-[#28324A]'
         }`}>
           {correctlyFound} / {targetCount}
@@ -129,7 +129,7 @@ export const WordHuntQuiz: React.FC<WordHuntQuizProps> = ({ fidel, lang, showKey
                 }`}
               >
                 <span className="font-ethiopic text-lg">{item.word}</span>
-                <Volume2 className="w-3.5 h-3.5 opacity-60 hover:opacity-100" />
+                <Volume2 className="w-3.5 h-3.5 opacity-60 hover:opacity-100 no-print" />
               </button>
             );
           })}

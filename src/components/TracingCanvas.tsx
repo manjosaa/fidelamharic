@@ -219,8 +219,8 @@ export const TracingCanvas: React.FC<TracingCanvasProps> = ({ fidel, lang }) => 
         </span>
       </div>
 
-      {/* Canvas Paper Card */}
-      <div className="bg-[#F7F1E4] border-2 border-[#CFC3A6] rounded-2xl p-1 shadow-sm overflow-hidden relative">
+      {/* Screen Canvas Paper Card */}
+      <div className="bg-[#F7F1E4] border-2 border-[#CFC3A6] rounded-2xl p-1 shadow-sm overflow-hidden relative no-print">
         <canvas
           ref={canvasRef}
           className="w-full h-56 rounded-xl touch-none cursor-crosshair block"
@@ -234,8 +234,33 @@ export const TracingCanvas: React.FC<TracingCanvasProps> = ({ fidel, lang }) => 
         />
       </div>
 
+      {/* Print-Only Lined Handwriting Grid for all 7 forms */}
+      <div className="hidden print:block border-2 border-[#CFC3A6] rounded-xl p-3 bg-[#F7F1E4] space-y-2">
+        <div className="text-[11px] font-bold text-[#5C6478]">
+          {isFr
+            ? 'Lignes d’écriture manuscrite (7 ordres) — Repassez sur les modèles puis écrivez 3 fois :'
+            : 'Handwriting practice lines (7 orders) — Trace over models then write 3 times:'}
+        </div>
+        <div className="grid grid-cols-1 gap-2">
+          {fidel.forms.map((form, idx) => (
+            <div key={form} className="flex items-center gap-3 border-b border-[#CFC3A6]/60 pb-1.5">
+              <div className="w-6 text-xs font-bold text-[#C4881F] font-cinzel">{idx + 1}.</div>
+              <div className="w-12 font-ethiopic text-2xl font-bold text-[#28324A] bg-white/70 border border-[#CFC3A6] rounded-md text-center py-0.5">
+                {form}
+              </div>
+              <div className="w-12 font-ethiopic text-2xl font-bold text-[#28324A]/25 border border-dashed border-[#CFC3A6] rounded-md text-center py-0.5">
+                {form}
+              </div>
+              <div className="flex-1 h-8 border-b-2 border-dashed border-[#CFC3A6]/80 flex items-center px-2">
+                <span className="text-[10px] text-[#8A93A6]/50">...........................................................................................................................</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Canvas Tooling Controls */}
-      <div className="bg-white/90 border border-[#CFC3A6] rounded-xl p-2.5 flex items-center justify-between gap-2 flex-wrap text-xs shadow-xs">
+      <div className="bg-white/90 border border-[#CFC3A6] rounded-xl p-2.5 flex items-center justify-between gap-2 flex-wrap text-xs shadow-xs no-print">
         {/* Colors */}
         <div className="flex items-center gap-1.5">
           {['#28324A', '#3E6650', '#A83A28', '#C4881F'].map((c) => (

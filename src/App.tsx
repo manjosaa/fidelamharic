@@ -19,7 +19,8 @@ import {
   BookOpen, 
   Lightbulb, 
   Flame, 
-  Puzzle 
+  Puzzle,
+  Printer
 } from 'lucide-react';
 
 export default function App() {
@@ -56,6 +57,15 @@ export default function App() {
     setMissingIndex(Math.floor(Math.random() * 7));
     setSheetKey((prev) => prev + 1);
     setShowKey(false);
+  };
+
+  const handlePrintWorksheet = () => {
+    const originalTitle = document.title;
+    document.title = `Amharic-Worksheet-${currentFidel.base}-${currentFidel.name}`;
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
   };
 
   const isFr = lang === 'fr';
@@ -111,11 +121,12 @@ export default function App() {
           onToggleKey={() => setShowKey((prev) => !prev)}
           onNewSheet={randomizeSheet}
           onOpenVoiceHelp={() => setIsVoiceHelpOpen(true)}
+          onPrint={handlePrintWorksheet}
           audioState={audioState}
         />
 
         {/* Primary Learning Module Navigation Tabs */}
-        <div className="bg-[#F7F1E4] border border-[#CFC3A6] rounded-2xl p-1.5 shadow-xs flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+        <div className="bg-[#F7F1E4] border border-[#CFC3A6] rounded-2xl p-1.5 shadow-xs flex items-center gap-1.5 overflow-x-auto scrollbar-none no-print">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
@@ -168,10 +179,21 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Student metadata lines */}
-                <div className="text-xs text-[#8A93A6] space-y-1 font-serif">
-                  <div>{isFr ? 'Nom : ____________________' : 'Name: ____________________'}</div>
-                  <div>{isFr ? 'Date : ____________________' : 'Date: ____________________'}</div>
+                {/* Right controls: Print button & Student metadata lines */}
+                <div className="flex flex-col sm:items-end gap-2">
+                  <button
+                    onClick={handlePrintWorksheet}
+                    className="no-print self-start sm:self-end flex items-center gap-1.5 px-3.5 py-1.5 bg-[#3E6650] text-white hover:bg-[#325240] rounded-xl text-xs font-bold transition shadow-xs cursor-pointer border border-[#3E6650]"
+                    title={isFr ? "Télécharger / Imprimer la fiche au format PDF" : "Download / Print this worksheet as a PDF"}
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>{isFr ? 'Télécharger PDF / Imprimer' : 'Download PDF / Print'}</span>
+                  </button>
+
+                  <div className="text-xs text-[#8A93A6] space-y-1 font-serif">
+                    <div>{isFr ? 'Nom : ____________________' : 'Name: ____________________'}</div>
+                    <div>{isFr ? 'Date : ____________________' : 'Date: ____________________'}</div>
+                  </div>
                 </div>
               </div>
 

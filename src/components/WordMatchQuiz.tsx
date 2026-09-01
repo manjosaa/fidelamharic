@@ -111,7 +111,7 @@ export const WordMatchQuiz: React.FC<WordMatchQuizProps> = ({ fidel, lang, showK
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 print-break-inside-avoid">
       <div className="flex items-center justify-between">
         <h3 className="font-cinzel text-base font-bold text-[#28324A] flex items-center gap-2">
           <span className="text-[#C4881F]">3.</span>
@@ -119,7 +119,7 @@ export const WordMatchQuiz: React.FC<WordMatchQuizProps> = ({ fidel, lang, showK
         </h3>
         <button
           onClick={initQuiz}
-          className="flex items-center gap-1 text-xs text-[#5C6478] hover:text-[#C4881F] bg-white/80 border border-[#CFC3A6] px-2.5 py-1 rounded-lg transition shadow-2xs"
+          className="flex items-center gap-1 text-xs text-[#5C6478] hover:text-[#C4881F] bg-white/80 border border-[#CFC3A6] px-2.5 py-1 rounded-lg transition shadow-2xs no-print"
           title="Mélanger"
         >
           <RefreshCw className="w-3 h-3 text-[#C4881F]" />
@@ -129,8 +129,8 @@ export const WordMatchQuiz: React.FC<WordMatchQuizProps> = ({ fidel, lang, showK
 
       <p className="text-xs text-[#5C6478] leading-relaxed">
         {isFr
-          ? 'Touchez un mot amharique à gauche, puis sa signification à droite pour les associer :'
-          : 'Tap an Amharic word on the left, then tap its definition on the right to pair them:'}
+          ? 'Associez chaque mot amharique (1-4) à sa signification correspondante (A-D) :'
+          : 'Match each Amharic word (1-4) with its correct definition on the right (A-D):'}
       </p>
 
       {/* Grid of Words & Meanings */}
@@ -178,33 +178,40 @@ export const WordMatchQuiz: React.FC<WordMatchQuizProps> = ({ fidel, lang, showK
                         e.stopPropagation();
                         speechService.speak(item.word);
                       }}
-                      className="p-1 text-[#C4881F] hover:text-[#28324A] transition"
+                      className="p-1 text-[#C4881F] hover:text-[#28324A] transition no-print"
                     >
                       <Volume2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  {pairedLetter ? (
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                          isCorrect ? 'bg-[#3E6650]' : isWrong ? 'bg-[#A83A28]' : 'bg-[#28324A]'
-                        }`}
-                      >
-                        {pairedLetter}
-                      </span>
-                      <button
-                        onClick={(e) => handleClearMatch(leftIdx, e)}
-                        className="text-[#8A93A6] hover:text-[#A83A28] p-0.5"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ) : isSelected ? (
-                    <span className="text-[11px] font-bold text-[#C4881F]">Choisir →</span>
-                  ) : (
-                    <ArrowRight className="w-3.5 h-3.5 text-[#CFC3A6]" />
-                  )}
+                  {/* Print blank or digital match indicator */}
+                  <div className="hidden print:flex items-center gap-1 font-mono font-bold text-xs text-[#5C6478]">
+                    <span>[ ___ ]</span>
+                  </div>
+
+                  <div className="print:hidden flex items-center">
+                    {pairedLetter ? (
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                            isCorrect ? 'bg-[#3E6650]' : isWrong ? 'bg-[#A83A28]' : 'bg-[#28324A]'
+                          }`}
+                        >
+                          {pairedLetter}
+                        </span>
+                        <button
+                          onClick={(e) => handleClearMatch(leftIdx, e)}
+                          className="text-[#8A93A6] hover:text-[#A83A28] p-0.5"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : isSelected ? (
+                      <span className="text-[11px] font-bold text-[#C4881F]">Choisir →</span>
+                    ) : (
+                      <ArrowRight className="w-3.5 h-3.5 text-[#CFC3A6]" />
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -243,7 +250,7 @@ export const WordMatchQuiz: React.FC<WordMatchQuizProps> = ({ fidel, lang, showK
                   </div>
 
                   {pairedLeftIdx !== undefined && (
-                    <span className="text-[11px] font-bold text-[#3E6650]">
+                    <span className="text-[11px] font-bold text-[#3E6650] no-print">
                       (#{Number(pairedLeftIdx) + 1})
                     </span>
                   )}
@@ -255,7 +262,7 @@ export const WordMatchQuiz: React.FC<WordMatchQuizProps> = ({ fidel, lang, showK
       </div>
 
       {/* Action button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 no-print">
         <button
           onClick={handleCheck}
           disabled={Object.keys(matches).length === 0}

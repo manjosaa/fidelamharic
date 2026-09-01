@@ -13,13 +13,13 @@ export const FidelChart: React.FC<FidelChartProps> = ({ fidel, lang }) => {
   const isFr = lang === 'fr';
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 print-break-inside-avoid">
       <div className="flex items-center justify-between">
         <h3 className="font-cinzel text-base font-bold text-[#28324A] flex items-center gap-2">
           <span className="text-[#C4881F]">1.</span>
           <span>{isFr ? 'Tableau du fidel' : 'Fidel Chart & Orders'}</span>
         </h3>
-        <span className="text-xs text-[#5C6478] flex items-center gap-1">
+        <span className="text-xs text-[#5C6478] flex items-center gap-1 no-print">
           <Volume2 className="w-3.5 h-3.5 text-[#C4881F]" />
           {isFr ? '7 ordres vocaliques' : '7 vowel orders'}
         </span>
@@ -79,7 +79,7 @@ export const FidelChart: React.FC<FidelChartProps> = ({ fidel, lang }) => {
                           <span className="font-ethiopic font-semibold text-sm text-[#28324A]">
                             {vocab.word}
                           </span>
-                          <Volume2 className="w-3.5 h-3.5 text-[#C4881F] opacity-70 group-hover:opacity-100 transition" />
+                          <Volume2 className="w-3.5 h-3.5 text-[#C4881F] opacity-70 group-hover:opacity-100 transition no-print" />
                         </div>
                       ) : (
                         <span className="text-[#8A93A6]">—</span>

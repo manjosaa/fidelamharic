@@ -64,7 +64,7 @@ export const MissingSequenceQuiz: React.FC<MissingSequenceQuizProps> = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 print-break-inside-avoid">
       <div className="flex items-center justify-between">
         <h3 className="font-cinzel text-base font-bold text-[#28324A] flex items-center gap-2">
           <span className="text-[#C4881F]">2.</span>
@@ -72,7 +72,7 @@ export const MissingSequenceQuiz: React.FC<MissingSequenceQuizProps> = ({
         </h3>
         <button
           onClick={onRefresh}
-          className="flex items-center gap-1 text-xs text-[#5C6478] hover:text-[#C4881F] bg-white/80 border border-[#CFC3A6] px-2.5 py-1 rounded-lg transition shadow-2xs"
+          className="flex items-center gap-1 text-xs text-[#5C6478] hover:text-[#C4881F] bg-white/80 border border-[#CFC3A6] px-2.5 py-1 rounded-lg transition shadow-2xs no-print"
           title="Nouvelle case manquante"
         >
           <RefreshCw className="w-3 h-3 text-[#C4881F]" />
@@ -103,7 +103,7 @@ export const MissingSequenceQuiz: React.FC<MissingSequenceQuizProps> = ({
                         : 'border-[#C4881F] bg-[#C4881F]/10 text-[#28324A] animate-pulse'
                     }`}
                   >
-                    {inputVal || '?'}
+                    {inputVal || <span className="text-[#C4881F] font-normal underline decoration-dashed">___</span>}
                   </div>
                 ) : (
                   <button
@@ -123,7 +123,7 @@ export const MissingSequenceQuiz: React.FC<MissingSequenceQuizProps> = ({
       </div>
 
       {/* Quick Choices on phone/tablet */}
-      <div className="bg-[#EDE3CC]/40 border border-[#CFC3A6]/70 rounded-xl p-2.5 space-y-2">
+      <div className="bg-[#EDE3CC]/40 border border-[#CFC3A6]/70 rounded-xl p-2.5 space-y-2 no-print">
         <div className="text-[11px] font-semibold text-[#5C6478]">
           {isFr ? 'Choix rapide (sur mobile) :' : 'Quick choices (on phone):'}
         </div>
@@ -145,7 +145,7 @@ export const MissingSequenceQuiz: React.FC<MissingSequenceQuizProps> = ({
       </div>
 
       {/* Actions & Verification */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 no-print">
         <button
           onClick={handleCheck}
           disabled={!inputVal}
