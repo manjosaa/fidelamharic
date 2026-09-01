@@ -42,5 +42,24 @@
 
       })();
     </script>
+    <script>
+      // One-time service worker unregister to bypass any stale cached shell.
+      (function(){
+        try{
+          if ('serviceWorker' in navigator && !sessionStorage.getItem('sw_unregistered')){
+            navigator.serviceWorker.getRegistrations().then(regs=>{
+              if (regs && regs.length){
+                Promise.all(regs.map(r=>r.unregister())).then(results=>{
+                  console.log('Unregistered service workers', results);
+                  sessionStorage.setItem('sw_unregistered','1');
+                  // Reload once so the browser fetches latest network files
+                  location.reload();
+                }).catch(e=>console.warn('SW unregister failed',e));
+              }
+            }).catch(e=>console.warn('getRegistrations failed',e));
+          }
+        }catch(e){console.warn(e)}
+      })();
+    </script>
   </body>
 </html>
